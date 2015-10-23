@@ -1,33 +1,35 @@
 module ALU(func, dataIn1, dataIn2, dataOut, compTrue);
 
-	input[31:0] dataIn1, dataIn2;
+	parameter BIT_WIDTH = 32;
+
+	input[BIT_WIDTH-1:0] dataIn1, dataIn2;
 	input[4:0] func; //one bit for whether this is a comp or not
 	//so func = {compOrNot, iword[7:4]}
 	
-	output[31:0] dataOut;
+	output[BIT_WIDTH-1:0] dataOut;
 	output compTrue;
 	reg compTrue;
-	reg[31:0] dataOut;
+	reg[BIT_WIDTH-1:0] dataOut;
 	
 	
 	always@(*) begin //for combinational logic
-		case(func) begin
+		case(func)
 			5'b00000: begin //ADD or ADDI or LD or ST - add imm for those, or JAL
 						dataOut <= dataIn1 + dataIn2;
 						compTrue <= 1'b0; //no comparison happening
-						end;
+						end
 			5'b00001: begin //SUB or SUBI
 						dataOut <= dataIn1 - dataIn2;
 						compTrue <= 1'b0;
-						end;
+						end
 			5'b00100: begin //AND or ANDI
 						dataOut <= dataIn1 & dataIn2;
 						compTrue <= 1'b0;
-						end;
+						end
 			5'b00101: begin //OR or ORI
 						dataOut <= dataIn1 | dataIn2;
 						compTrue <= 1'b0;
-						end;
+						end
 			5'b00110: begin // XOR or XORI
 						dataOut <= dataIn1 ^ dataIn2;
 						compTrue <= 1'b0;
@@ -112,10 +114,10 @@ module ALU(func, dataIn1, dataIn2, dataOut, compTrue);
 						dataOut <= (dataIn1 > 32'd0) ? 32'd1 : 32'd0;
 						compTrue <= (dataIn1 > 32'd0) ? 1'b1 : 1'b0;
 						end
-			default: begin //required, output whatever?
+			default: begin //required, output whatever
 						dataOut <= 32'd0;
 						compTrue <= 1'b0;
-
+						end
 		endcase
    end //always
 endmodule
