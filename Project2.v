@@ -17,7 +17,7 @@ module Project2(SW,KEY,LEDR,LEDG,HEX0,HEX1,HEX2,HEX3,CLOCK_50);
   parameter ADDR_LEDR 					 = 32'hF0000004;
   parameter ADDR_LEDG 					 = 32'hF0000008;
   
-  parameter IMEM_INIT_FILE				 = "Sorter2.mif";
+  parameter IMEM_INIT_FILE				 = "Test2.mif";
   parameter IMEM_ADDR_BIT_WIDTH 		 = 11;
   parameter IMEM_DATA_BIT_WIDTH 		 = INST_BIT_WIDTH;
   parameter IMEM_PC_BITS_HI     		 = IMEM_ADDR_BIT_WIDTH + 2;
@@ -72,6 +72,15 @@ module Project2(SW,KEY,LEDR,LEDG,HEX0,HEX1,HEX2,HEX3,CLOCK_50);
   //regFileWrtSel for first regFile Mux: 0 for aluOut and 1 for memDOut
   //not a wire but: second regFile Mux: isJAL 0 for output of first mux, 1 for output of PCAlu (Pc+4)
   //isJAL: used in the three muxes described above
+   wire[DBITS-1:0] PCIncrement;
+  	wire[DBITS-1:0] regFileMux2Out;
+	wire compTrue;
+   wire[DBITS-1:0] aluOut;
+	wire[DBITS-1:0] aluSrc2MuxOut;
+	wire[DBITS-1:0] sextOut;
+	wire[DBITS-1:0] shiftedSextOut = {sextOut[29:0], 2'b00};
+	wire[DBITS-1:0] memDOut;
+
   wire[4:0] func;
   wire[REG_INDEX_BIT_WIDTH-1:0] rs1Index, rs2Index, destRegIndex;
   wire[15:0] imm;
@@ -86,26 +95,25 @@ module Project2(SW,KEY,LEDR,LEDG,HEX0,HEX1,HEX2,HEX3,CLOCK_50);
   
   wire[DBITS-1:0] rs1, rs2;
   RegisterFile #(.DBITS(DBITS), .ABITS(REG_INDEX_BIT_WIDTH), .WORDS(1<<REG_INDEX_BIT_WIDTH)) regFile(
-	.clk(clk), .wrtEn(regFileWrtEn), .wrtInd(destReg), .rdInd0(rs1Index), .rdInd1(rs2Index), .dIn(regFileMux2Out), .dOut0(rs1), .dOut1(rs2));
+	.clk(clk), .wrtEn(regFileWrtEn), .wrtInd(destRegIndex), .rdInd0(rs1Index), .rdInd1(rs2Index), .dIn(regFileMux2Out), .dOut0(rs1), .dOut1(rs2));
 	
 	//regFileDataIn muxes:
 	wire[DBITS-1:0] regFileMuxSecondInput;
 	TwotoOneMux #(.BIT_WIDTH(DBITS)) regFileDataInMuxFirst(.select(regFileWrtSel), .dataIn0(aluOut), 
 	.dataIn1(memDOut), .dataOut(regFileMuxSecondInput));
-	wire[DBITS-1:0] regFileMux2Out;
 	TwotoOneMux #(.BIT_WIDTH(DBITS)) regFileDataInMuxSecond(.select(isJAL), .dataIn0(regFileMuxSecondInput), 
-	.dataIn1(PCincrement), .dataOut(regFileMux2Out));
+	.dataIn1(PCIncrement), .dataOut(regFileMux2Out));
 	
   //Create ALU units
  
   //PC increment ALU
-  wire[DBITS-1:0] PCincrement;
+  //wire[DBITS-1:0] PCIncrement;
   ALU #(.BIT_WIDTH(DBITS)) PcIncrementAlu(.func(5'b00000), .dataIn1(pcOut), .dataIn2(32'd4), 
-  .dataOut(PCincrement), .compTrue(dontCare));
+  .dataOut(PCIncrement), .compTrue(dontCare));
  
-  //PC Branch ALU: takes in PCincrement and sext(imm<<2)
+  //PC Branch ALU: takes in PCIncrement and sext(imm<<2)
   wire[DBITS-1:0] PCBranchAddr;
-  ALU #(.BIT_WIDTH(DBITS)) PcBranchAlu(.func(5'b00000), .dataIn1(PCincrement), 
+  ALU #(.BIT_WIDTH(DBITS)) PcBranchAlu(.func(5'b00000), .dataIn1(PCIncrement), 
   .dataIn2(shiftedSextOut), .dataOut(PCBranchAddr), .compTrue(dontCare));
   
   //PC muxes:
@@ -119,25 +127,24 @@ module Project2(SW,KEY,LEDR,LEDG,HEX0,HEX1,HEX2,HEX3,CLOCK_50);
   //IMPORTANT: assign PCIn to PCAddrMuxOut <- how to do that? Use reg orrrr?
   
   //Main ALU
-  wire compTrue;
-  wire[DBITS-1:0] aluOut;
   ALU #(.BIT_WIDTH(DBITS)) MainAlu(.func(func), .dataIn1(rs1), .dataIn2(aluSrc2MuxOut), 
   .dataOut(aluOut), .compTrue(compTrue));
   //aluSrc2 Muxes:
   wire[DBITS-1:0] aluMuxSecondInput;
   TwotoOneMux #(.BIT_WIDTH(DBITS)) aluMuxFirst(.select(aluSrc2Sel), .dataIn0(rs2), 
    .dataIn1(sextOut), .dataOut(aluMuxSecondInput));
-  wire[DBITS-1:0] aluSrc2MuxOut;
+  //wire[DBITS-1:0] aluSrc2MuxOut;
   TwotoOneMux #(.BIT_WIDTH(DBITS)) aluMuxSecond(.select(isJAL), .dataIn0(aluMuxSecondInput), 
    .dataIn1(shiftedSextOut), .dataOut(aluSrc2MuxOut));
-
-  //Logic for shifted immediate:
-  wire[DBITS-1:0] shiftedSextOut = {sextOut[29:0], 2'b00};
-  //^will that work? am i using wire correctly?
   
   //sign extend the immediate values
-  wire[DBITS-1:0] sextOut;
+  //wire[DBITS-1:0] sextOut;
   SignExtension #(16, DBITS)sext(.dIn(imm), .dOut(sextOut));
+  
+  
+  //Logic for shifted immediate:
+  //wire[DBITS-1:0] shiftedSextOut = {sextOut[29:0], 2'b00};
+  //^will that work? am i using wire correctly?
   
   
   // Put the code for data memory and I/O here
@@ -146,8 +153,8 @@ module Project2(SW,KEY,LEDR,LEDG,HEX0,HEX1,HEX2,HEX3,CLOCK_50);
   wire[7:0] ledgOut;
   wire[15:0] hexOut;
   DataMemory #(.MEM_INIT_FILE(IMEM_INIT_FILE)) dataMem (.clk(clk), .wrtEn(dMemWrtEn), 
-   .addr(aluOut[12:2]), .dIn(rs2), .sw(SW), .key(KEY), 
-	.ledr(ledr), .ledg(ledg), .hex(hex), .dOut(memDOut));
+   .addr(aluOut), .dIn(rs2), .sw(SW), .key(KEY), 
+	.ledr(ledrOut), .ledg(ledgOut), .hex(hexOut), .dOut(memDOut));
 
   // KEYS, SWITCHES, HEXS, and LEDS are memory mapped IO
   assign LEDR = ledrOut;
