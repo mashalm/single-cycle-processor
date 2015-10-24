@@ -13,7 +13,7 @@ regFileWrtEn, dMemWrtEn, aluSrc2Sel, PCSel, regFileWrtSel, isJAL);
 	output reg PCSel, aluSrc2Sel, regFileWrtSel, isJAL;
 	
 	always @(*) begin
-		//init here, no default needed
+		//init here
 		rdIndex0 <= iword[27:24];
 		rdIndex1 <= iword[23:20];
 		wrtIndex <= iword[31:28];
@@ -109,6 +109,19 @@ regFileWrtEn, dMemWrtEn, aluSrc2Sel, PCSel, regFileWrtSel, isJAL);
 				regFileWrtSel <= 1'b0; //doesn't matter- choosing JAL
 				isJAL <= 1'b1;
 			end
+			default: begin
+				aluFn <= {1'b0, iword[7:4]};
+				rdIndex0 <= iword[27:24];
+				rdIndex1 <= iword[23:20];
+				wrtIndex <= iword[31:28];
+				imm <= iword[23:8];
+				regFileWrtEn <= 1'b0;
+				dMemWrtEn <= 1'b0;
+				PCSel <= 1'b0;
+				aluSrc2Sel <= 1'b0;
+				regFileWrtSel <= 1'b0;
+				isJAL <= 1'b0;
+				end
 		endcase
 	end
 	

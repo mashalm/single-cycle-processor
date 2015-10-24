@@ -23,7 +23,7 @@ module Project2(SW,KEY,LEDR,LEDG,HEX0,HEX1,HEX2,HEX3,CLOCK_50);
   parameter IMEM_PC_BITS_HI     		 = IMEM_ADDR_BIT_WIDTH + 2;
   parameter IMEM_PC_BITS_LO     		 = 2;
   
-  parameter DMEMADDRBITS 				 = 13; //why 13?
+  parameter DMEMADDRBITS 				 = 11; //why 13?
   parameter DMEMWORDBITS				 = 2;
   parameter DMEMWORDS					 = 2048;
   
@@ -45,11 +45,16 @@ module Project2(SW,KEY,LEDR,LEDG,HEX0,HEX1,HEX2,HEX3,CLOCK_50);
   wire reset = ~lock;
   
   // Create PC and its logic
+  //will be used below for mux
+  wire[DBITS-1:0] PCAddrMuxOut;
+  
   wire pcWrtEn = 1'b1;
   wire[DBITS - 1: 0] pcIn; // Implement the logic that generates pcIn; you may change pcIn to reg if necessary
   wire[DBITS - 1: 0] pcOut;
   // This PC instantiation is your starting point
   Register #(.BIT_WIDTH(DBITS), .RESET_VALUE(START_PC)) pc (clk, reset, pcWrtEn, pcIn, pcOut);
+
+  assign pcIn =  PCAddrMuxOut;
 
   // Create instruction memory
   wire[IMEM_DATA_BIT_WIDTH - 1: 0] instWord;
@@ -120,11 +125,11 @@ module Project2(SW,KEY,LEDR,LEDG,HEX0,HEX1,HEX2,HEX3,CLOCK_50);
   wire[DBITS-1:0] PCMuxSecondInput;
   TwotoOneMux #(.BIT_WIDTH(DBITS)) PCMuxFirst(.select(PCSel), .dataIn0(PCIncrement), 
    .dataIn1(PCBranchAddr), .dataOut(PCMuxSecondInput));
-  wire[DBITS-1:0] PCAddrMuxOut;
+  //wire[DBITS-1:0] PCAddrMuxOut;
   TwotoOneMux #(.BIT_WIDTH(DBITS)) PCMuxSecond(.select(isJAL), .dataIn0(PCMuxSecondInput), 
    .dataIn1(aluOut), .dataOut(PCAddrMuxOut));
 	
-  //IMPORTANT: assign PCIn to PCAddrMuxOut <- how to do that? Use reg orrrr?
+  //IMPORTANT: assign PCIn to PCAddrMuxOut
   
   //Main ALU
   ALU #(.BIT_WIDTH(DBITS)) MainAlu(.func(func), .dataIn1(rs1), .dataIn2(aluSrc2MuxOut), 
@@ -152,14 +157,27 @@ module Project2(SW,KEY,LEDR,LEDG,HEX0,HEX1,HEX2,HEX3,CLOCK_50);
   wire[9:0] ledrOut;
   wire[7:0] ledgOut;
   wire[15:0] hexOut;
-  DataMemory #(.MEM_INIT_FILE(IMEM_INIT_FILE)) dataMem (.clk(clk), .wrtEn(dMemWrtEn), 
+  DataMemory #(.MEM_INIT_FILE(IMEM_INIT_FILE), .ADDR_BIT_WIDTH(DBITS), .DATA_BIT_WIDTH(DBITS), 
+   .TRUE_ADDR_BIT_WIDTH(DMEMADDRBITS), .N_WORDS(1<<DMEMADDRBITS)) dataMem (.clk(clk), .wrtEn(dMemWrtEn), 
    .addr(aluOut), .dIn(rs2), .sw(SW), .key(KEY), 
 	.ledr(ledrOut), .ledg(ledgOut), .hex(hexOut), .dOut(memDOut));
 
   // KEYS, SWITCHES, HEXS, and LEDS are memory mapped IO
   assign LEDR = ledrOut;
   assign LEDG = ledgOut;
-  assign HEX = hexOut;
+  //i assume hexOut[15:12] is for hex3 
+  wire[6:0] hexOutZero;
+  wire[6:0] hexOutOne;
+  wire[6:0] hexOutTwo;
+  wire[6:0] hexOutThree;
+  SevenSeg hexZero(hexOut[15:12],hexOutZero);
+  SevenSeg hexOne(hexOut[11:8],hexOutOne);
+  SevenSeg hexTwo(hexOut[7:4],hexOutTwo);
+  SevenSeg hexThree(hexOut[3:0],hexOutThree);
+  assign HEX0 = hexOutZero;
+  assign HEX1 = hexOutOne;
+  assign HEX2 = hexOutTwo;
+  assign HEX3 = hexOutThree;
 
 endmodule
 

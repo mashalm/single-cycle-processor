@@ -3,3 +3,5 @@
 !.gitignore
 !*.v
 !*.qpf
+!*.mif
+!*.a32
