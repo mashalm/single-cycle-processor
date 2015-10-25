@@ -11,7 +11,7 @@ module RegisterFile(clk, wrtEn, wrtInd, rdInd0, rdInd1, dIn, dOut0, dOut1);
 	
 	wire [(DBITS-1): 0] dOut0, dOut1;
 	
-	reg[(DBITS-1):0] registers[0: 1<<WORDS];
+	reg[(DBITS-1):0] registers[0: WORDS];
 	
 	always @ (posedge clk) begin
 		if(wrtEn == 1'b1) //for writing to regs

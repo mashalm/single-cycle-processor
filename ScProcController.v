@@ -25,7 +25,7 @@ regFileWrtEn, dMemWrtEn, aluSrc2Sel, PCSel, regFileWrtSel, isJAL);
 		aluSrc2Sel <= 1'b0;
 		regFileWrtSel <= 1'b0;
 		isJAL <= 1'b0;
-		case(iword[31:28]) //group by primary opcode
+		case(iword[3:0]) //group by primary opcode
 			4'b0000: begin //ALU-R instruction
 				aluFn <= {1'b0, iword[7:4]};
 				regFileWrtEn <= 1'b1; //write to DestReg
