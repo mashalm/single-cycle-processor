@@ -17,7 +17,7 @@ module Project2(SW,KEY,LEDR,LEDG,HEX0,HEX1,HEX2,HEX3,CLOCK_50);
   parameter ADDR_LEDR 					 = 32'hF0000004;
   parameter ADDR_LEDG 					 = 32'hF0000008;
   
-  parameter IMEM_INIT_FILE				 = "Test2.mif";
+  parameter IMEM_INIT_FILE				 = "simpleTest.mif";
   parameter IMEM_ADDR_BIT_WIDTH 		 = 11;
   parameter IMEM_DATA_BIT_WIDTH 		 = INST_BIT_WIDTH;
   parameter IMEM_PC_BITS_HI     		 = IMEM_ADDR_BIT_WIDTH + 2;
@@ -91,9 +91,10 @@ module Project2(SW,KEY,LEDR,LEDG,HEX0,HEX1,HEX2,HEX3,CLOCK_50);
   wire[15:0] imm;
   wire regFileWrtEn, dMemWrtEn;
   wire aluSrc2Sel, PCSel, regFileWrtSel, isJAL;
+  wire needsShift;
   SCProcController controller(.iword(instWord), .aluCompTrue(compTrue), .aluFn(func),
   .rdIndex0(rs1Index), .rdIndex1(rs2Index), .wrtIndex(destRegIndex), .imm(imm), .regFileWrtEn(regFileWrtEn), 
-  .dMemWrtEn(dMemWrtEn), .aluSrc2Sel(aluSrc2Sel), .PCSel(PCSel), .regFileWrtSel(regFileWrtSel), .isJAL(isJAL));
+  .dMemWrtEn(dMemWrtEn), .aluSrc2Sel(aluSrc2Sel), .PCSel(PCSel), .regFileWrtSel(regFileWrtSel), .isJAL(isJAL), .needsShift(needsShift));
   
   // Create the registers
   //not sure how the posedge and negedge registers fit in -- if at all
@@ -139,7 +140,7 @@ module Project2(SW,KEY,LEDR,LEDG,HEX0,HEX1,HEX2,HEX3,CLOCK_50);
   TwotoOneMux #(.BIT_WIDTH(DBITS)) aluMuxFirst(.select(aluSrc2Sel), .dataIn0(rs2), 
    .dataIn1(sextOut), .dataOut(aluMuxSecondInput));
   //wire[DBITS-1:0] aluSrc2MuxOut;
-  TwotoOneMux #(.BIT_WIDTH(DBITS)) aluMuxSecond(.select(isJAL), .dataIn0(aluMuxSecondInput), 
+  TwotoOneMux #(.BIT_WIDTH(DBITS)) aluMuxSecond(.select(needsShift), .dataIn0(aluMuxSecondInput), 
    .dataIn1(shiftedSextOut), .dataOut(aluSrc2MuxOut));
   
   //sign extend the immediate values

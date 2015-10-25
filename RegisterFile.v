@@ -1,7 +1,7 @@
 module RegisterFile(clk, wrtEn, wrtInd, rdInd0, rdInd1, dIn, dOut0, dOut1);
 
-   parameter DBITS; // Number of data bits
-   parameter ABITS; // Number of address bits
+   parameter DBITS = 32; // Number of data bits
+   parameter ABITS = 4; // Number of address bits
    parameter WORDS = (1<<ABITS);
 
 	input clk, wrtEn;

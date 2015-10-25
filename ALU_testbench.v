@@ -14,17 +14,50 @@ module ALU_testbench;
 	ALU #(.BIT_WIDTH(DBITS)) alu(func, dataIn1, dataIn2, dataOut, compTrue);
 	
 	initial begin
+	
+		//add
 		func = 5'b00000;
 		dataIn1 = 2;
 		dataIn2 = 3;
 		#10;
-		$display("func = %d, dataIn1 = %d, dataIn2 = %d, dataOut = %d, compTrue = %d", func, dataIn1, dataIn2, dataOut, compTrue);
+		$display("add: func = %d, dataIn1 = %d, dataIn2 = %d, dataOut = %d, compTrue = %d", func, dataIn1, dataIn2, dataOut, compTrue);
+		
+		//add
+		func = 5'b00000;
+		dataIn1 = -2;
+		dataIn2 = 3;
+		#10;
+		$display("add: func = %d, dataIn1 = %d, dataIn2 = %d, dataOut = %d, compTrue = %d", func, dataIn1, dataIn2, dataOut, compTrue);
 	
+	
+		//sub
 		func = 5'b00001;
 		dataIn1 = 5;
 		dataIn2 = 2;
 		#10;
-		$display("func = %d, dataIn1 = %d, dataIn2 = %d, dataOut = %d, compTrue = %d", func, dataIn1, dataIn2, dataOut, compTrue);
+		$display("sub: func = %d, dataIn1 = %d, dataIn2 = %d, dataOut = %d, compTrue = %d", func, dataIn1, dataIn2, dataOut, compTrue);
+		
+		//and
+		func = 5'b00100;
+		dataIn1 = 1;
+		dataIn2 = 2;
+		#10;
+		$display("and: func = %d, dataIn1 = %d, dataIn2 = %d, dataOut = %d, compTrue = %d", func, dataIn1, dataIn2, dataOut, compTrue);
+		
+		//and
+		func = 5'b00100;
+		dataIn1 = 12;
+		dataIn2 = 0;
+		#10;
+		$display("and: func = %d, dataIn1 = %d, dataIn2 = %d, dataOut = %d, compTrue = %d", func, dataIn1, dataIn2, dataOut, compTrue);
+		
+		//and
+		func = 5'b00100;
+		dataIn1 = -1;
+		dataIn2 = 2;
+		#10;
+		$display("and: func = %d, dataIn1 = %d, dataIn2 = %d, dataOut = %d, compTrue = %d", func, dataIn1, dataIn2, dataOut, compTrue);
+		
 		
 		// testing BEQ
 		func = 5'b10001;

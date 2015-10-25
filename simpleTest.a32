@@ -1,0 +1,17 @@
+
+.NAME IOBASE= 0xF0000000
+.NAME	OFSHEX= 0x00000000
+
+.ORIG 0x40
+		mvhi	gp,IOBASE
+		ANDI s0, s0, 0
+		ANDI s1, s1, 0
+
+		ADDI s0, s0, 3
+		ADDI s1, s1, 2
+
+		ADD s2, s0, s1
+
+		ANDI s0, s0, 0
+
+		SW s2, OFSHEX(gp)

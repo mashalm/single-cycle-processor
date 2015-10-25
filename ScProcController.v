@@ -1,5 +1,5 @@
 module SCProcController(iword, aluCompTrue, aluFn, rdIndex0, rdIndex1, wrtIndex, imm, 
-regFileWrtEn, dMemWrtEn, aluSrc2Sel, PCSel, regFileWrtSel, isJAL);
+regFileWrtEn, dMemWrtEn, aluSrc2Sel, PCSel, regFileWrtSel, isJAL, needsShift);
 
 //use parameters later
 
@@ -10,7 +10,7 @@ regFileWrtEn, dMemWrtEn, aluSrc2Sel, PCSel, regFileWrtSel, isJAL);
 	output reg [3:0] rdIndex0, rdIndex1, wrtIndex;
 	output reg [15:0] imm;
 	output reg regFileWrtEn, dMemWrtEn;
-	output reg PCSel, aluSrc2Sel, regFileWrtSel, isJAL;
+	output reg PCSel, aluSrc2Sel, regFileWrtSel, isJAL, needsShift;
 	
 	always @(*) begin
 		//init here
@@ -25,6 +25,7 @@ regFileWrtEn, dMemWrtEn, aluSrc2Sel, PCSel, regFileWrtSel, isJAL);
 		aluSrc2Sel <= 1'b0;
 		regFileWrtSel <= 1'b0;
 		isJAL <= 1'b0;
+		needsShift <= 1'b0;
 		case(iword[3:0]) //group by primary opcode
 			4'b0000: begin //ALU-R instruction
 				aluFn <= {1'b0, iword[7:4]};
@@ -52,6 +53,7 @@ regFileWrtEn, dMemWrtEn, aluSrc2Sel, PCSel, regFileWrtSel, isJAL);
 				aluSrc2Sel <= 1'b1; // 1 means sext(imm)
 				regFileWrtSel <= 1'b1; //1 means memDOut
 				isJAL <= 1'b0;
+				needsShift <= 1'b1;
 			end
 			4'b0101: begin //SW instruction
 			//no RD so:
@@ -64,6 +66,7 @@ regFileWrtEn, dMemWrtEn, aluSrc2Sel, PCSel, regFileWrtSel, isJAL);
 				aluSrc2Sel <= 1'b1; // 1 means sexT(imm)
 				regFileWrtSel <= 1'b0; //doesn't matter - aren't writing
 				isJAL <= 1'b0;
+				needsShift <= 1'b1;
 			end
 			4'b0010: begin //CMP-R instruction
 				aluFn <= {1'b1, iword[7:4]};
@@ -98,6 +101,7 @@ regFileWrtEn, dMemWrtEn, aluSrc2Sel, PCSel, regFileWrtSel, isJAL);
 				aluSrc2Sel <= 1'b1; // 1 means sext(imm)
 				regFileWrtSel <= 1'b0; //doesn't matter- aren't writing
 				isJAL <= 1'b0;
+				needsShift <= 1'b0;
 				
 			end
 			4'b1011: begin //JAL instruction
@@ -108,6 +112,7 @@ regFileWrtEn, dMemWrtEn, aluSrc2Sel, PCSel, regFileWrtSel, isJAL);
 				aluSrc2Sel <= 1'b0; //doesn't matter- choosing JAL
 				regFileWrtSel <= 1'b0; //doesn't matter- choosing JAL
 				isJAL <= 1'b1;
+				needsShift <= 1'b1;
 			end
 			default: begin
 				aluFn <= {1'b0, iword[7:4]};
@@ -121,6 +126,7 @@ regFileWrtEn, dMemWrtEn, aluSrc2Sel, PCSel, regFileWrtSel, isJAL);
 				aluSrc2Sel <= 1'b0;
 				regFileWrtSel <= 1'b0;
 				isJAL <= 1'b0;
+				needsShift <= 1'b0;
 				end
 		endcase
 	end
