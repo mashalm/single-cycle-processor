@@ -11,6 +11,7 @@ module ALU(func, dataIn1, dataIn2, dataOut, compTrue);
 	reg compTrue;
 	reg[BIT_WIDTH-1:0] dataOut;
 	
+	wire signed [BIT_WIDTH - 1:0] dataIn1, dataIn2; 
 	
 	always@(*) begin //for combinational logic
 		case(func)
@@ -47,7 +48,7 @@ module ALU(func, dataIn1, dataIn2, dataOut, compTrue);
 						compTrue <= 1'b0;
 						end
 			5'b01011: begin // MVHI
-						dataOut <= ((dataIn2 & 32'hFFFF0000));
+						dataOut <= ((dataIn1 & 32'hFFFF0000));
 						compTrue <= 1'b0;
 						end
 			//below are the comparing instructions
